@@ -31,7 +31,7 @@ func startService(ctx context.Context, serviceName registry.ServiceName, host, p
 	go func() {
 		log.Println(srv.ListenAndServe())
 		log.Println("listenAndserve")
-		err := registry.ShtdownService(fmt.Sprintf("http://%s:%s", host, port))
+		err := registry.ShutdownService(fmt.Sprintf("http://%s:%s", host, port))
 		if err != nil {
 			log.Println(err)
 		}
@@ -42,7 +42,7 @@ func startService(ctx context.Context, serviceName registry.ServiceName, host, p
 		c := make(chan os.Signal, 1)
 		signal.Notify(c, syscall.SIGTERM, os.Interrupt)
 		<-c
-		err := registry.ShtdownService(fmt.Sprintf("http://%s:%s", host, port))
+		err := registry.ShutdownService(fmt.Sprintf("http://%s:%s", host, port))
 		if err != nil {
 			log.Println(err)
 		}

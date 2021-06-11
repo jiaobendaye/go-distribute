@@ -17,9 +17,15 @@ type registry struct {
 	mutex         *sync.Mutex
 }
 
-func (r *registry) add(reg Registration) error {
+func (r *registry) add(item Registration) error {
 	r.mutex.Lock()
-	r.registrations = append(r.registrations, reg)
+	for i := range reg.registrations {
+		if reg.registrations[i].ServiceName == item.ServiceName {
+			reg.registrations = append(reg.registrations[:i], reg.registrations[i+1:]...)
+			log.Printf("CLeaning old service: %v with URL: %s \n", item.ServiceName, item.ServiceURL)
+		}
+	}
+	r.registrations = append(r.registrations, item)
 	r.mutex.Unlock()
 	return nil
 }
@@ -28,7 +34,7 @@ func (r *registry) remove(url string) error {
 	for i := range reg.registrations {
 		if reg.registrations[i].ServiceURL == url {
 			r.mutex.Lock()
-			reg.registrations = append(reg.registrations[:i], r.registrations[i+1:]...)
+			reg.registrations = append(reg.registrations[:i], reg.registrations[i+1:]...)
 			r.mutex.Unlock()
 			return nil
 		}

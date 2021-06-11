@@ -6,6 +6,9 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
 )
 
 func Start(ctx context.Context, host, port string, reg registry.Registration,
@@ -36,14 +39,25 @@ func startService(ctx context.Context, serviceName registry.ServiceName, host, p
 	}()
 
 	go func() {
-		fmt.Printf("%v started, Press any key to stop \n", serviceName)
-		var s string
-		fmt.Scanln(&s)
-		log.Println("prsee key")
+		c := make(chan os.Signal, 1)
+		signal.Notify(c, syscall.SIGTERM, os.Interrupt)
+		<-c
 		err := registry.ShtdownService(fmt.Sprintf("http://%s:%s", host, port))
 		if err != nil {
 			log.Println(err)
 		}
+		cancel()
+	}()
+
+	go func() {
+		fmt.Printf("%v started, Press any key to stop \n", serviceName)
+		var s string
+		fmt.Scanln(&s)
+		log.Println("prsee key")
+		// err := registry.ShtdownService(fmt.Sprintf("http://%s:%s", host, port))
+		// if err != nil {
+		// 	log.Println(err)
+		// }
 		srv.Shutdown(ctx)
 		cancel()
 	}()
